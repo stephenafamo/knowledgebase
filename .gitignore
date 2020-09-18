@@ -1,0 +1,5 @@
+*.env
+test.db
+vendor
+assets/build
+docs
