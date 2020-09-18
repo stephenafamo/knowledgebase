@@ -160,7 +160,15 @@ func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	filename := filepath.Base(path)
+	heading := strings.TrimSuffix(filename, ".md")
+
+	if len(strings.Split(heading, " ")) > 1 {
+		heading = strings.SplitN(heading, " ", 2)[1]
+	}
+
 	data := map[string]interface{}{
+		"heading":   heading,
 		"menuHTML":  ws.MenuHTML(r.URL.Path),
 		"mountPath": ws.MountPath,
 		"content":   string(markdown),
