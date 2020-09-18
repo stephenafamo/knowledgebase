@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,41 +19,55 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
 	"github.com/spf13/afero"
-	"github.com/stephenafamo/knowledgebase/internal"
 	"github.com/stephenafamo/knowledgebase/search"
 )
 
-type Menu = internal.Menu
+type MenuItem struct {
+	Label    string
+	Path     string
+	Children []*MenuItem
+}
 
+var DefaultMountPath = "/"
 var DefaultDocsDir = "pages"
 var DefaultAssetsDir = "assets"
 
 type KB struct {
 	Store afero.Fs // Store containing the docs and assets
 
-	PagesDir  string
-	AssetsDir string
-	Searcher  search.Searcher
+	// BaseMenu is a list of menu items that will be displayed before the
+	// menu generatd from the pages.
+	BaseMenu []*MenuItem
 
+	// mount path for links in the menu. Default "/"
+	MountPath string
+
+	// Directory in the store where the markdown files are
+	// Default "pages"
+	PagesDir string
+
+	// Directory in the store where the referenced assets in the docs are
+	// Default "assets"
+	AssetsDir string
+
+	Searcher  search.Searcher
 	templates *template.Template
-	menu      *Menu
+	menu      []*MenuItem
 }
 
 func (ws *KB) setTemplates() error {
 	functions := map[string]interface{}{}
 
-	functions["MarkdownToHTML"] = internal.MarkdownToHTML
-	functions["MenuHTML"] = internal.MenuHTML
-	functions["GetStyles"] = internal.GetStyles
-	functions["GetScripts"] = internal.GetScripts
+	functions["MarkdownToHTML"] = MarkdownToHTML
+	functions["GetStyles"] = GetStyles
+	functions["GetScripts"] = GetScripts
 
 	t := template.New("Views").Funcs(functions)
 
-	path := "/templates/main.html"
-
-	file, err := pkger.Open(path)
+	// We must manually list the file for pkger.Open to be able to link it
+	file, err := pkger.Open("/templates/main.html")
 	if err != nil {
-		err = fmt.Errorf("could not open file %q: %w", path, err)
+		err = fmt.Errorf("could not open file %q: %w", "/templates/main.html", err)
 		return err
 	}
 	defer file.Close()
@@ -73,6 +88,10 @@ func (ws *KB) setTemplates() error {
 
 func (ws *KB) Handler(ctx context.Context) (http.Handler, error) {
 	var err error
+
+	if ws.MountPath == "" {
+		ws.MountPath = DefaultMountPath
+	}
 
 	if ws.PagesDir == "" {
 		ws.PagesDir = DefaultDocsDir
@@ -130,6 +149,7 @@ func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	if errors.Is(err, afero.ErrFileNotFound) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		log.Printf("404 for file %q", fullPath)
 		return
 	}
 	defer file.Close()
@@ -141,9 +161,9 @@ func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"menu":    ws.menu,
-		"url":     r.URL,
-		"content": string(markdown),
+		"menuHTML":  ws.MenuHTML(r.URL.Path),
+		"mountPath": ws.MountPath,
+		"content":   string(markdown),
 	}
 
 	err = ws.templates.Execute(w, data)
@@ -153,8 +173,8 @@ func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *KB) buildMenu() error {
-	menu := &Menu{
-		Children: make([]*Menu, 0),
+	menu := &MenuItem{
+		Children: make([]*MenuItem, 0),
 	}
 
 	// Walking through embed directory
@@ -213,14 +233,14 @@ func (ws *KB) buildMenu() error {
 			}
 
 			if len(parentMenu.Children) <= int(order) {
-				x := make([]*Menu, order+1)
+				x := make([]*MenuItem, order+1)
 				copy(x, parentMenu.Children)
 				parentMenu.Children = x
 			}
-			parentMenu.Children[order] = &Menu{
+			parentMenu.Children[order] = &MenuItem{
 				Label:    name,
-				Path:     path,
-				Children: make([]*Menu, 0),
+				Path:     filepath.Join(ws.MountPath, path),
+				Children: make([]*MenuItem, 0),
 			}
 
 			return nil
@@ -231,6 +251,6 @@ func (ws *KB) buildMenu() error {
 		return err
 	}
 
-	ws.menu = menu
+	ws.menu = menu.Children
 	return nil
 }

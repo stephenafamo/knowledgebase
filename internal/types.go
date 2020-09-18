@@ -8,9 +8,3 @@ type Config struct {
 
 	SENTRY_DSN string `env:"SENTRY_DSN"`
 }
-
-type Menu struct {
-	Label    string
-	Path     string
-	Children []*Menu
-}

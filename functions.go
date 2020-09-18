@@ -1,10 +1,11 @@
-package internal
+package knowledgebase
 
 import (
 	"bytes"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"path/filepath"
 
 	"github.com/markbates/pkger"
 	images "github.com/mdigger/goldmark-images"
@@ -34,11 +35,10 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 func GetScripts() (template.JS, error) {
 	js := template.JS("")
 
-	path := "github.com/stephenafamo/knowledgebase:/assets/build/js/app.js"
-
-	file, err := pkger.Open(path)
+	// We have to statically list the files for them to be added
+	file, err := pkger.Open("/assets/build/js/app.js")
 	if err != nil {
-		err = fmt.Errorf("could not open file %q: %w", path, err)
+		err = fmt.Errorf("could not open file %q: %w", "/assets/build/js/app.js", err)
 		return js, err
 	}
 	defer file.Close()
@@ -56,11 +56,9 @@ func GetScripts() (template.JS, error) {
 func GetStyles() (template.CSS, error) {
 	styles := template.CSS("")
 
-	path := "github.com/stephenafamo/knowledgebase:/assets/build/css/app.css"
-
-	file, err := pkger.Open(path)
+	file, err := pkger.Open("/assets/build/css/app.css")
 	if err != nil {
-		err = fmt.Errorf("could not open file %q: %w", path, err)
+		err = fmt.Errorf("could not open file %q: %w", "/assets/build/css/app.css", err)
 		return styles, err
 	}
 	defer file.Close()
@@ -75,11 +73,14 @@ func GetStyles() (template.CSS, error) {
 	return styles, nil
 }
 
-func MenuHTML(menu *Menu, currPath string) template.HTML {
-	return template.HTML(fmt.Sprintf("%s", printChlidren(menu.Children, currPath)))
+func (ws KB) MenuHTML(currPath string) template.HTML {
+	return template.HTML(
+		ws.printMenu(ws.BaseMenu, "") +
+			ws.printMenu(ws.menu, currPath),
+	)
 }
 
-func printChlidren(children []*Menu, currPath string) string {
+func (ws KB) printMenu(children []*MenuItem, currPath string) string {
 	var str string
 
 	if children == nil {
@@ -92,18 +93,19 @@ func printChlidren(children []*Menu, currPath string) string {
 		}
 
 		classes := menuClasses
-		if currPath == child.Path {
+		if filepath.Join(ws.MountPath, currPath) == child.Path {
 			classes = menuClassesA
 		}
 
 		if len(child.Children) == 0 {
-			str += fmt.Sprintf("<a class=%q href=%q>%s</a>", classes, "/"+child.Path, child.Label)
+			str += fmt.Sprintf("<a class=%q href=%q>%s</a>", classes,
+				child.Path, child.Label)
 			continue
 		}
 
 		str += fmt.Sprintf(
-			"<details class=%q> <summary>%s</summary> %s </details>\n",
-			classes, child.Label, printChlidren(child.Children, currPath))
+			"<details open class=%q> <summary>%s</summary> %s </details>\n",
+			classes, child.Label, ws.printMenu(child.Children, currPath))
 	}
 	return str
 }
