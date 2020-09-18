@@ -34,7 +34,7 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 func GetScripts() (template.JS, error) {
 	js := template.JS("")
 
-	path := "/assets/build/js/app.js"
+	path := "github.com/stephenafamo/knowledgebase:/assets/build/js/app.js"
 
 	file, err := pkger.Open(path)
 	if err != nil {
@@ -56,7 +56,7 @@ func GetScripts() (template.JS, error) {
 func GetStyles() (template.CSS, error) {
 	styles := template.CSS("")
 
-	path := "/assets/build/css/app.css"
+	path := "github.com/stephenafamo/knowledgebase:/assets/build/css/app.css"
 
 	file, err := pkger.Open(path)
 	if err != nil {
