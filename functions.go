@@ -36,7 +36,7 @@ func GetScripts() (template.JS, error) {
 	js := template.JS("")
 
 	// We have to statically list the files for them to be added
-	file, err := pkger.Open("/assets/build/js/app.js")
+	file, err := pkger.Open("github.com/stephenafamo/knowledgebase:/assets/build/js/app.js")
 	if err != nil {
 		err = fmt.Errorf("could not open file %q: %w", "/assets/build/js/app.js", err)
 		return js, err
@@ -56,7 +56,7 @@ func GetScripts() (template.JS, error) {
 func GetStyles() (template.CSS, error) {
 	styles := template.CSS("")
 
-	file, err := pkger.Open("/assets/build/css/app.css")
+	file, err := pkger.Open("github.com/stephenafamo/knowledgebase:/assets/build/css/app.css")
 	if err != nil {
 		err = fmt.Errorf("could not open file %q: %w", "/assets/build/css/app.css", err)
 		return styles, err

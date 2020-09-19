@@ -65,7 +65,7 @@ func (ws *KB) setTemplates() error {
 	t := template.New("Views").Funcs(functions)
 
 	// We must manually list the file for pkger.Open to be able to link it
-	file, err := pkger.Open("/templates/main.html")
+	file, err := pkger.Open("github.com/stephenafamo/knowledgebase:/templates/main.html")
 	if err != nil {
 		err = fmt.Errorf("could not open file %q: %w", "/templates/main.html", err)
 		return err
