@@ -10,7 +10,6 @@ require (
 	github.com/spf13/afero v1.4.0
 	github.com/spf13/cobra v1.0.0
 	github.com/stephenafamo/janus v0.0.0-20200917011258-52ecf63a4d75
-	github.com/stephenafamo/knowledgebase/examples v0.0.0-00010101000000-000000000000 // indirect
 	github.com/stephenafamo/orchestra v0.0.0-20200524112330-a21d225c0c33
 	github.com/yuin/goldmark v1.2.1
 )

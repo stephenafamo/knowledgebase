@@ -217,7 +217,6 @@ github.com/stephenafamo/chi v4.2.0+incompatible h1:FrspsCdAoJChwCMCRmDpACXHAHs7L
 github.com/stephenafamo/chi v4.2.0+incompatible/go.mod h1:2lbHeBZ8UPxoWT1h+aPxAreXrCp4Ih7Ygztfxe1TtNg=
 github.com/stephenafamo/janus v0.0.0-20200917011258-52ecf63a4d75 h1:aXdsCpbgg9sqZ61ymfEL2ZrDYWENQj+6hsba5SNS0cg=
 github.com/stephenafamo/janus v0.0.0-20200917011258-52ecf63a4d75/go.mod h1:EUZn2bqrQexxjx655KfWilMhJnC6CwNeVMzeKKUWEuU=
-github.com/stephenafamo/knowledgebase v0.0.0-20200919091737-3b4fd332a7ad/go.mod h1:JtiF7ep+PfOrO2mDZovxwjMqrEYtRSW16QUQWmkFEGc=
 github.com/stephenafamo/mailer v0.0.0-20200302114133-711e5c277e4e/go.mod h1:bKHsLjPF4MYnlCrR8qqwOs2RIZ6mB2/Il/1hD9Yy9ZY=
 github.com/stephenafamo/orchestra v0.0.0-20200524112330-a21d225c0c33 h1:n5vo9nnn655AxpW4n3hqfF6F+eopwHS0qXcrmoGMvho=
 github.com/stephenafamo/orchestra v0.0.0-20200524112330-a21d225c0c33/go.mod h1:EIWFzHtiX+C3SpeaYEjiQWEo+Zm3txSanq7fZBw+688=

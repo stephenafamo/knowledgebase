@@ -2,6 +2,12 @@
 
 knowledgebase is a tool to quickly generate a knowledge base server.
 
+### Showcase
+
+* [Swish.ink help docs](https://swish.ink/docs)
+
+## Usage
+
 There are two ways to use it.
 
 * As a CLI tool. Run the command, visit your site. [MORE](#use-as-a-cli-tool)
@@ -19,7 +25,7 @@ The directory with your documentation needs two sub-directories.
 
     In your markdown pages, you can refer to any of these as `/assets/my-static-file.jpg`.
 
-## Use as a CLI tool
+### Use as a CLI tool
 
 The CLI tool allows you to start a web server leading to your documentation.
 
@@ -48,7 +54,7 @@ Flags:
   -p, --port int            Port to start the server on (default 80)
 ```
 
-## Use as a Library
+### Use as a Library
 
 You can use this as a library, it will return a [`http.Handler`](https://golang.org/pkg/net/http/#Handler) which you can mount on any router. There are some more options when using it this way.
 
@@ -95,7 +101,7 @@ type MenuItem struct {
 }
 ```
 
-### Examples
+#### Examples
 
 Using as a standalone webserver
 
