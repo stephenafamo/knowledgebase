@@ -1,6 +1,6 @@
 # KnowledgeBase
 
-knowldegebase is a tool to quickly generate a knowledge base server.
+knowledgebase is a tool to quickly generate a knowledge base server.
 
 There are two ways to use it.
 
@@ -26,10 +26,10 @@ The CLI tool allows you to start a web server leading to your documentation.
 To install the command line tool, you should have `Go` installed.
 
 ```sh
-go get github.com/stephenafamo/knowldegebase/cmd/knowldegebase
+go get github.com/stephenafamo/knowledgebase/cmd/knowledgebase
 
 # Check the help menu
-knowldegebase -h
+knowledgebase -h
 ```
 
 The help menu: 
