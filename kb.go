@@ -35,11 +35,8 @@ var DefaultAssetsDir = "assets"
 type KB struct {
 	Store afero.Fs // Store containing the docs and assets
 
-	// BaseMenu is a list of menu items that will be displayed before the
-	// menu generatd from the pages.
-	BaseMenu []*MenuItem
-
 	// mount path for links in the menu. Default "/"
+	// Useful if the handler is to be mounted in a subdirectory of the server
 	MountPath string
 
 	// Directory in the store where the markdown files are
@@ -49,6 +46,25 @@ type KB struct {
 	// Directory in the store where the referenced assets in the docs are
 	// Default "assets"
 	AssetsDir string
+
+	// BaseMenu is a list of menu items that will be displayed before the
+	// menu generated from the pages.
+	// Example:
+	// BaseMenu: []*knowledgebase.MenuItem{
+	//     {
+	//         Label: "Back to main site",
+	//         Path:  "/",
+	//     },
+	//     {
+	//         Label: "Login",
+	//         Path:  "http://example.com/login",
+	//     },
+	//     {
+	//         Label: "Signup",
+	//         Path:  "http://example.com/signup",
+	//     },
+	// },
+	BaseMenu []*MenuItem
 
 	Searcher  search.Searcher
 	templates *template.Template
