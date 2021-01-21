@@ -39,6 +39,19 @@ type KB struct {
 	// Useful if the handler is to be mounted in a subdirectory of the server
 	MountPath string
 
+	// RootURL is the main application URL. Useful if the knowledgebase is part of a larger application
+	// Default is the MountPath
+	RootURL string
+
+	// RootLabel is the label for the "Home" link at the top of the sidebar. Default: Home
+	RootLabel string
+
+	// MountLabel is the label for the documentation root.
+	// It will not be displayed in the sidebar if empty OR if the
+	// RootURL is not set or the RootURL is the same as the MountPath.
+	// In these scenarios, the RootURL is the MountPath and the RootLabel will suffice
+	MountLabel string
+
 	// Directory in the store where the markdown files are
 	// Default "pages"
 	PagesDir string
@@ -102,63 +115,64 @@ func (ws *KB) setTemplates() error {
 	return nil
 }
 
-func (ws *KB) Handler(ctx context.Context) (http.Handler, error) {
+func (kb *KB) Handler(ctx context.Context) (http.Handler, error) {
 	var err error
 
-	if ws.MountPath == "" {
-		ws.MountPath = DefaultMountPath
+	if kb.MountPath == "" {
+		kb.MountPath = DefaultMountPath
 	}
 
-	if ws.PagesDir == "" {
-		ws.PagesDir = DefaultDocsDir
+	if kb.PagesDir == "" {
+		kb.PagesDir = DefaultDocsDir
 	}
 
-	if ws.AssetsDir == "" {
-		ws.AssetsDir = DefaultAssetsDir
+	if kb.AssetsDir == "" {
+		kb.AssetsDir = DefaultAssetsDir
 	}
 
-	if ws.Searcher != nil {
-		err = ws.Searcher.IndexDocs(ctx, ws.Store, ws.PagesDir)
+	if kb.Searcher != nil {
+		err = kb.Searcher.IndexDocs(ctx, kb.Store, kb.PagesDir)
 		if err != nil {
 			return nil, fmt.Errorf("could not index docs: %w", err)
 		}
 	}
 
-	err = ws.setTemplates()
+	err = kb.setTemplates()
 	if err != nil {
 		return nil, fmt.Errorf("could not set templates: %w", err)
 	}
 
-	err = ws.buildMenu()
+	err = kb.buildMenu()
 	if err != nil {
 		return nil, fmt.Errorf("could not build menu: %w", err)
 	}
 
-	httpFs := afero.NewHttpFs(ws.Store)
-	fileserver := http.FileServer(httpFs.Dir(ws.AssetsDir))
+	httpFs := afero.NewHttpFs(kb.Store)
+	fileserver := http.FileServer(httpFs.Dir(kb.AssetsDir))
 
 	r := chi.NewRouter()
 	r.Mount(
-		fmt.Sprintf("/%s/", ws.AssetsDir),
-		http.StripPrefix(fmt.Sprintf("/%s", ws.AssetsDir), fileserver))
+		fmt.Sprintf("/%s/", kb.AssetsDir),
+		http.StripPrefix(fmt.Sprintf("/%s", kb.AssetsDir), fileserver),
+	)
 
-	r.Mount("/", http.HandlerFunc(ws.serveDocs))
+	r.Mount("/", http.HandlerFunc(kb.serveDocs))
 
 	var handler http.Handler = r
 
 	return handler, nil
 }
 
-func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
+func (kb KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	if path == "" || path == "/" {
 		path = "index.md"
 	}
 
-	fullPath := filepath.Join(ws.PagesDir, path)
+	fullPath := filepath.Join(kb.PagesDir, path)
 
-	file, err := ws.Store.Open(fullPath)
+	file, err := kb.Store.Open(fullPath)
 	if err != nil && !errors.Is(err, afero.ErrFileNotFound) {
 		err = fmt.Errorf("could not open file %q: %w", path, err)
 		panic(err)
@@ -184,13 +198,13 @@ func (ws KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"heading":   heading,
-		"menuHTML":  ws.MenuHTML(r.URL.Path),
-		"mountPath": ws.MountPath,
-		"content":   string(markdown),
+		"heading":  heading,
+		"menuHTML": kb.MenuHTML(r.URL.Path),
+		"kb":       kb,
+		"content":  string(markdown),
 	}
 
-	err = ws.templates.Execute(w, data)
+	err = kb.templates.Execute(w, data)
 	if err != nil {
 		panic(fmt.Errorf("could not render data: %w", err))
 	}
