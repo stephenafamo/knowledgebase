@@ -278,7 +278,7 @@ func (ws *KB) buildMenu() error {
 			}
 			parentMenu.Children[order] = &MenuItem{
 				Label:    name,
-				Path:     filepath.Join(ws.MountPath, path),
+				Path:     filepath.ToSlash(filepath.Join(ws.MountPath, path)),
 				Children: make([]*MenuItem, 0),
 			}
 
