@@ -228,19 +228,20 @@ func (ws *KB) buildMenu() error {
 			}
 
 			// Ignore non-markdown files
-			if !info.IsDir() && !strings.HasSuffix(info.Name(), ".md") {
+			if !info.IsDir() && !strings.HasSuffix(path, ".md") {
 				return nil
 			}
 
+			path = filepath.Clean(filepath.ToSlash(path))
 			path = strings.TrimPrefix(path, ws.PagesDir)
 			path = strings.TrimPrefix(path, "/")
 
 			// do not add these to the menu
-			if path == "" || path == "/" || path == "index.md" {
+			if path == "" || path == "/" || filepath.Base(path) == "index.md" {
 				return nil
 			}
 
-			pathParts := strings.Split(info.Name(), " ")
+			pathParts := strings.Split(filepath.Base(path), " ")
 
 			if len(pathParts) < 2 {
 				return fmt.Errorf("must add the order before filename for %q", path)
@@ -254,7 +255,7 @@ func (ws *KB) buildMenu() error {
 			name := strings.TrimSuffix(
 				strings.TrimSpace(
 					strings.Join(pathParts[1:], " "),
-				), filepath.Ext(info.Name()),
+				), filepath.Ext(path),
 			)
 
 			parentMenu := menu
