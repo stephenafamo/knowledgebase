@@ -10,6 +10,8 @@ import (
 	"github.com/markbates/pkger"
 	images "github.com/mdigger/goldmark-images"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
 )
 
 func MarkdownToHTML(src string) (template.HTML, error) {
@@ -25,6 +27,10 @@ func MarkdownToHTML(src string) (template.HTML, error) {
 func getGoldMark(src string, imageURL func(string) string) (string, error) {
 	var buf bytes.Buffer
 	if err := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
 		images.NewReplacer(imageURL),
 	).Convert([]byte(src), &buf); err != nil {
 		return "", fmt.Errorf("could not convert MD to html: %w", err)
