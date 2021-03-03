@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
@@ -79,7 +79,10 @@ type KB struct {
 	// },
 	BaseMenu []*MenuItem
 
-	Searcher  search.Searcher
+	Searcher search.Searcher
+
+	InHead, BeforeBody, AfterBody template.HTML
+
 	templates *template.Template
 	menu      []*MenuItem
 }
@@ -90,6 +93,9 @@ func (ws *KB) setTemplates() error {
 	functions["MarkdownToHTML"] = MarkdownToHTML
 	functions["GetStyles"] = GetStyles
 	functions["GetScripts"] = GetScripts
+	functions["InHead"] = func() template.HTML { return ws.InHead }
+	functions["BeforeBody"] = func() template.HTML { return ws.BeforeBody }
+	functions["AfterBody"] = func() template.HTML { return ws.AfterBody }
 
 	t := template.New("Views").Funcs(functions)
 
