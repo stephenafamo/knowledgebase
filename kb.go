@@ -16,7 +16,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/markbates/pkger"
 	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase/search"
@@ -164,7 +165,7 @@ func (kb *KB) Handler(ctx context.Context) (http.Handler, error) {
 
 	r.Mount("/", http.HandlerFunc(kb.serveDocs))
 
-	var handler http.Handler = r
+	var handler http.Handler = middleware.StripSlashes(r)
 
 	return handler, nil
 }
