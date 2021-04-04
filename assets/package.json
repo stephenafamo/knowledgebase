@@ -4,23 +4,26 @@
   "description": "Building static assets",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "watch": "NODE_ENV=development webpack --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "hot": "NODE_ENV=development webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "production": "NODE_ENV=production webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "development": "mix",
+    "watch": "mix watch",
+    "watch-poll": "mix watch -- --watch-options-poll=1000",
+    "hot": "mix watch --hot",
+    "production": "mix --production"
   },
   "keywords": [],
   "author": "Stephen Afam-Osemene <me@stephenafamo.com>",
   "license": "ISC",
   "devDependencies": {
-    "@tailwindcss/ui": "^0.6.2",
+    "@tailwindcss/forms": "^0.3.2",
+    "@tailwindcss/jit": "^0.1.18",
+    "@tailwindcss/typography": "^0.4.0",
     "alpinejs": "^2.7.0",
+    "autoprefixer": "^10.2.5",
     "clean-webpack-plugin": "^3.0.0",
-    "laravel-mix": "^4.1.4",
+    "laravel-mix": "^6.0.16",
     "laravel-mix-clean": "^0.1.0",
-    "postcss-import": "^12.0.1",
-    "tailwindcss": "^1.8.10",
-    "vue-template-compiler": "^2.6.12"
+    "postcss": "^8.2.9",
+    "postcss-import": "^14.0.1",
+    "tailwindcss": "^2.0.4"
   }
 }
