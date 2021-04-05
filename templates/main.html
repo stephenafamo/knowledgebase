@@ -13,9 +13,9 @@
     {{InHead}}
 
     <style>
-      :root {
-        --color-primary: {{.primaryColor}};
-      }
+:root {
+  --color-primary: {{.primaryColor}};
+}
     </style>
   </head>
   <body class="">
@@ -41,62 +41,71 @@
           To: "opacity-0"
         -->
         <div
-          x-show="isOpen"
-          x-transition:enter="transition-opacity ease-linear duration-300"
-          x-transition:enter-start="opacity-0"
-          x-transition:enter-end="opacity-100"
-          x-transition:leave="transition-opacity ease-linear duration-300"
-          x-transition:leave-start="opacity-100"
-          x-transition:leave-end="opacity-0"
-          class="fixed inset-0 z-40 flex"
-          >
-          <div class="fixed inset-0">
-            <div class="absolute inset-0 bg-gray-600 opacity-75"></div>
-          </div>
-          <!--
-            Off-canvas menu, show/hide based on off-canvas menu state.
-
-            Entering: "transition ease-in-out duration-300 transform"
-            From: "-translate-x-full"
-            To: "translate-x-0"
-            Leaving: "transition ease-in-out duration-300 transform"
-            From: "translate-x-0"
-            To: "-translate-x-full"
-          -->
-          <div
             x-show="isOpen"
-            x-transition:enter="transition ease-in-out duration-300 transform"
-            x-transition:enter-start="-translate-x-full"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in-out duration-300 transform"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full"
-            class="relative flex flex-col flex-1 w-full max-w-xs bg-white"
+            x-transition:enter="transition-opacity ease-linear duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-40 flex"
             >
-            <div class="absolute top-0 right-0 p-1 -mr-14">
-              <button x-on:click="isOpen = !isOpen" class="flex items-center justify-center w-12 h-12 rounded-full focus:outline-none focus:bg-gray-600" aria-label="Close sidebar">
-                <svg class="w-6 h-6 text-white" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            <div class="fixed inset-0">
+              <div class="absolute inset-0 bg-gray-600 opacity-75"></div>
             </div>
-            <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <a href="{{ or .config.RootURL .config.MountPath }}" class="flex items-center flex-shrink-0 px-4">
-                <span class="text-xl font-bold">{{or .config.RootLabel "Home"}}</span>
-              </a>
-              {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
-                <a href="{{ .config.MountPath }}" class="px-4">
-                  <span class="text-sm font-bold">{{ .config.MountLabel}}</span>
-                </a>
-              {{end}}
-              <nav class="px-2 mt-5 space-y-1">
-                {{ .menuHTML }}
-              </nav>
+            <!--
+              Off-canvas menu, show/hide based on off-canvas menu state.
+
+              Entering: "transition ease-in-out duration-300 transform"
+              From: "-translate-x-full"
+              To: "translate-x-0"
+              Leaving: "transition ease-in-out duration-300 transform"
+              From: "translate-x-0"
+              To: "-translate-x-full"
+            -->
+            <div
+                x-show="isOpen"
+                x-transition:enter="transition ease-in-out duration-300 transform"
+                x-transition:enter-start="-translate-x-full"
+                x-transition:enter-end="translate-x-0"
+                x-transition:leave="transition ease-in-out duration-300 transform"
+                x-transition:leave-start="translate-x-0"
+                x-transition:leave-end="-translate-x-full"
+                class="relative flex flex-col flex-1 w-full max-w-xs bg-white"
+                >
+                <div class="absolute top-0 right-0 p-1 -mr-14">
+                  <button x-on:click="isOpen = !isOpen" class="flex items-center justify-center w-12 h-12 rounded-full focus:outline-none focus:bg-gray-600" aria-label="Close sidebar">
+                    <svg class="w-6 h-6 text-white" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                  <div class="flex items-center px-4">
+                    {{if .config.Logo}}
+                      <a href="{{ or .config.RootURL .config.MountPath }}">
+                        <img width="196" height="196" class="inline-block w-auto h-12 mr-2" src="{{.config.Logo}}">
+                      </a>
+                    {{end}}
+                    <div class="">
+                      <a href="{{ or .config.RootURL .config.MountPath }}">
+                        <p class="text-xl font-bold">{{or .config.RootLabel "Home"}}</p>
+                      </a>
+                      {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
+                        <a href="{{ .config.MountPath }}">
+                          <p class="text-sm font-bold">{{ .config.MountLabel}}</p>
+                        </a>
+                      {{end}}
+                    </div>
+                  </div>
+                  <nav class="px-2 mt-5 space-y-1">
+                    {{ .menuHTML }}
+                  </nav>
+                </div>
             </div>
-          </div>
-          <div class="flex-shrink-0 w-14">
-            <!-- Force sidebar to shrink to fit close icon -->
-          </div>
+            <div class="flex-shrink-0 w-14">
+              <!-- Force sidebar to shrink to fit close icon -->
+            </div>
         </div>
       </div>
 
@@ -106,14 +115,23 @@
           <!-- Sidebar component, swap this element with another sidebar if you like -->
           <div class="flex flex-col flex-1 h-0 bg-white border-r border-gray-200">
             <div class="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-              <a href="{{ or .config.RootURL .config.MountPath }}" class="px-4">
-                <span class="text-xl font-bold">{{or .config.RootLabel "Home"}}</span>
-              </a>
-              {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
-                <a href="{{ .config.MountPath }}" class="px-4">
-                  <span class="text-sm font-bold">{{ .config.MountLabel}}</span>
-                </a>
-              {{end}}
+              <div class="flex items-center px-4">
+                {{if .config.Logo}}
+                  <a href="{{ or .config.RootURL .config.MountPath }}">
+                    <img width="196" height="196" class="inline-block w-auto h-12 mr-2" src="{{.config.Logo}}">
+                  </a>
+                {{end}}
+                <div class="">
+                  <a href="{{ or .config.RootURL .config.MountPath }}">
+                    <p class="text-xl font-bold">{{or .config.RootLabel "Home"}}</p>
+                  </a>
+                  {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
+                    <a href="{{ .config.MountPath }}">
+                      <p class="text-sm font-bold">{{ .config.MountLabel}}</p>
+                    </a>
+                  {{end}}
+                </div>
+              </div>
               <nav class="flex-1 px-2 mt-5 bg-white space-y-1">
                 {{ .menuHTML }}
               </nav>

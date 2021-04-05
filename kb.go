@@ -67,6 +67,10 @@ type Config struct {
 	// Used to style some elements in the documentation, such as links
 	PrimaryColor string
 
+	// An optional logo that will be displayed on the sidebar
+	// A link to the image is needed. Should be square
+	Logo string
+
 	InHead, BeforeBody, AfterBody template.HTML
 
 	// This content will be added at the end of every doc page
