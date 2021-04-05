@@ -104,24 +104,28 @@ func (ws *KB) buildMenu() error {
 	return nil
 }
 
-func (ws KB) printMenu(children []*MenuItem, currPath string) string {
+func (ws KB) printMenu(children []*MenuItem, currPath string) (markup string, isActive bool) {
 	const menuClassesDefault = `flex items-center px-2 py-2 text-sm font-medium text-gray-600 group leading-5 rounded-md hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:text-gray-900 focus:bg-gray-50 transition ease-in-out duration-150`
 	const menuClassesActive = `flex items-center px-2 py-2 text-sm font-medium text-gray-900 bg-gray-100 group leading-5 rounded-md hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-200 transition ease-in-out duration-150`
 
 	var str string
 
 	if children == nil {
-		return str
+		return str, false
 	}
 
+	var anyChildActive bool
 	for _, child := range children {
 		if child == nil || child.Label == "" {
 			continue
 		}
 
+		selfIsActive := false
 		classes := menuClassesDefault
 		if filepath.Join(ws.MountPath, currPath) == child.Path {
 			classes = menuClassesActive
+			selfIsActive = true
+			anyChildActive = true
 		}
 
 		if len(child.Children) == 0 {
@@ -130,10 +134,21 @@ func (ws KB) printMenu(children []*MenuItem, currPath string) string {
 			continue
 		}
 
-		str += fmt.Sprintf(
-			"<details open class=%q> <summary>%s</summary> %s </details>\n",
-			classes, child.Label, ws.printMenu(child.Children, currPath))
+		childrenMarkup, aChildIsActive := ws.printMenu(child.Children, currPath)
+
+		// It is active if either itself or any child is active
+		isActive = selfIsActive || aChildIsActive
+
+		childMarkup := fmt.Sprintf("<details class=%q> <summary>%s</summary> %s </details>\n",
+			classes, child.Label, childrenMarkup)
+
+		if isActive {
+			childMarkup = fmt.Sprintf("<details open class=%q> <summary>%s</summary> %s </details>\n",
+				classes, child.Label, childrenMarkup)
+		}
+
+		str += childMarkup
 	}
 
-	return str
+	return str, anyChildActive
 }

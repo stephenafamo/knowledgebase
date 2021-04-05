@@ -75,5 +75,8 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 }
 
 func (ws KB) menuHTML(currPath string) template.HTML {
-	return template.HTML(ws.printMenu(ws.BaseMenu, "") + ws.printMenu(ws.menu, currPath))
+	baseMenu, _ := ws.printMenu(ws.BaseMenu, "")
+	mainMenu, _ := ws.printMenu(ws.menu, currPath)
+
+	return template.HTML(baseMenu + mainMenu)
 }
