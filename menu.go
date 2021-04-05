@@ -16,17 +16,21 @@ type MenuItem struct {
 	Children []*MenuItem
 }
 
-func (ws *KB) Has(name string) (bool, error) {
-	return afero.Exists(afero.NewBasePathFs(ws.Store, ws.PagesDir), name)
+func (ws *knowledgebase) HasPage(name string) (bool, error) {
+	return afero.Exists(afero.NewBasePathFs(ws.config.Store, ws.config.PagesDir), name)
 }
 
-func (ws *KB) buildMenu() error {
+func (ws *knowledgebase) HasAsset(name string) (bool, error) {
+	return afero.Exists(afero.NewBasePathFs(ws.config.Store, ws.config.AssetsDir), name)
+}
+
+func (ws *knowledgebase) buildMenu() error {
 	menu := &MenuItem{
 		Children: make([]*MenuItem, 0),
 	}
 
 	// Walking through embed directory
-	err := afero.Walk(ws.Store, ws.PagesDir,
+	err := afero.Walk(ws.config.Store, ws.config.PagesDir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -43,7 +47,7 @@ func (ws *KB) buildMenu() error {
 			}
 
 			path = filepath.Clean(filepath.ToSlash(path))
-			path = strings.TrimPrefix(path, ws.PagesDir)
+			path = strings.TrimPrefix(path, ws.config.PagesDir)
 			path = strings.TrimPrefix(path, "/")
 
 			// do not add these to the menu
@@ -88,7 +92,7 @@ func (ws *KB) buildMenu() error {
 			}
 			parentMenu.Children[order] = &MenuItem{
 				Label:    name,
-				Path:     filepath.ToSlash(filepath.Join(ws.MountPath, path)),
+				Path:     filepath.ToSlash(filepath.Join(ws.config.MountPath, path)),
 				Children: make([]*MenuItem, 0),
 			}
 
@@ -104,7 +108,7 @@ func (ws *KB) buildMenu() error {
 	return nil
 }
 
-func (ws KB) printMenu(children []*MenuItem, currPath string) (markup string, isActive bool) {
+func (ws knowledgebase) printMenu(children []*MenuItem, currPath string) (markup string, isActive bool) {
 	const menuClassesDefault = `flex items-center px-2 py-2 text-sm font-medium text-gray-600 group leading-5 rounded-md hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:text-gray-900 focus:bg-gray-50 transition ease-in-out duration-150`
 	const menuClassesActive = `flex items-center px-2 py-2 text-sm font-medium text-gray-900 bg-gray-100 group leading-5 rounded-md hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-200 transition ease-in-out duration-150`
 
@@ -122,7 +126,7 @@ func (ws KB) printMenu(children []*MenuItem, currPath string) (markup string, is
 
 		selfIsActive := false
 		classes := menuClassesDefault
-		if filepath.Join(ws.MountPath, currPath) == child.Path {
+		if filepath.Join(ws.config.MountPath, currPath) == child.Path {
 			classes = menuClassesActive
 			selfIsActive = true
 			anyChildActive = true

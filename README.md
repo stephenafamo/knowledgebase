@@ -59,12 +59,25 @@ Flags:
 You can use this as a library, it will return a [`http.Handler`](https://golang.org/pkg/net/http/#Handler) which you can mount on any router. There are some more options when using it this way.
 
 ```go
-type KB struct {
+type Config struct {
 	Store afero.Fs // Store containing the docs and assets
 
 	// mount path for links in the menu. Default "/"
 	// Useful if the handler is to be mounted in a subdirectory of the server
 	MountPath string
+
+	// RootURL is the main application URL. Useful if the knowledgebase is part of a larger application
+	// Default is the MountPath
+	RootURL string
+
+	// RootLabel is the label for the "Home" link at the top of the sidebar. Default: Home
+	RootLabel string
+
+	// MountLabel is the label for the documentation root.
+	// It will not be displayed in the sidebar if empty OR if the
+	// RootURL is not set or the RootURL is the same as the MountPath.
+	// In these scenarios, the RootURL is the MountPath and the RootLabel will suffice
+	MountLabel string
 
 	// Directory in the store where the markdown files are
 	// Default "pages"
@@ -73,7 +86,7 @@ type KB struct {
 	// Directory in the store where the referenced assets in the docs are
 	// Default "assets"
 	AssetsDir string
-    
+
 	// BaseMenu is a list of menu items that will be displayed before the
 	// menu generated from the pages.
 	// Example:
@@ -92,6 +105,16 @@ type KB struct {
 	//     },
 	// },
 	BaseMenu []*MenuItem
+
+	Searcher search.Searcher
+
+	InHead, BeforeBody, AfterBody template.HTML
+
+	// This content will be added at the end of every doc page
+	// BEFORE the markdown is converted to HTML
+	// A good use for this is to add markdown link references that are used in
+	// multiple places. see https://spec.commonmark.org/0.29/#link-reference-definition
+	SharedMarkdown string
 }
 
 type MenuItem struct {
@@ -99,6 +122,22 @@ type MenuItem struct {
 	Path     string
 	Children []*MenuItem
 }
+```
+
+You create a new `knowledgebase` instance by calling the `New()` method:
+
+```go
+ctx := context.Background()
+config := knowledgebase.Config{
+    // Setup configuration
+}
+
+kb, err := knowledgebase.New(ctx, config)
+if err != nil {
+    // handle error
+}
+
+handler := kb.Handler()
 ```
 
 #### Examples
@@ -118,16 +157,16 @@ import (
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store: afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 	}
-	handler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServe(":8080", kb.Handler())
 }
 ```
 
@@ -147,18 +186,18 @@ import (
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 		MountPath: "/docs",
 	}
-	docsHandler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
 	r := mux.NewRouter()
-	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", docsHandler))
+	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", kb.Handler()))
 
 	http.ListenAndServe(":8080", r)
 }
@@ -173,25 +212,25 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 		MountPath: "/docs",
 	}
-	docsHandler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
 	r := chi.NewRouter()
-	r.Mount("/docs", http.StripPrefix("/docs", docsHandler))
+	r.Mount("/docs", http.StripPrefix("/docs", kb.Handler()))
 
 	http.ListenAndServe(":8080", r)
 }

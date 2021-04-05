@@ -22,7 +22,7 @@ var js string
 //go:embed assets/build/css/app.css
 var css string
 
-func (ws *KB) setTemplates() error {
+func (ws *knowledgebase) setTemplates() error {
 	var err error
 
 	functions := map[string]interface{}{}
@@ -34,9 +34,9 @@ func (ws *KB) setTemplates() error {
 		return template.JS(js)
 	}
 	functions["MarkdownToHTML"] = markdownToHTML
-	functions["InHead"] = func() template.HTML { return ws.InHead }
-	functions["BeforeBody"] = func() template.HTML { return ws.BeforeBody }
-	functions["AfterBody"] = func() template.HTML { return ws.AfterBody }
+	functions["InHead"] = func() template.HTML { return ws.config.InHead }
+	functions["BeforeBody"] = func() template.HTML { return ws.config.BeforeBody }
+	functions["AfterBody"] = func() template.HTML { return ws.config.AfterBody }
 
 	t := template.New("Views").Funcs(functions)
 
@@ -74,8 +74,8 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 	return buf.String(), nil
 }
 
-func (ws KB) menuHTML(currPath string) template.HTML {
-	baseMenu, _ := ws.printMenu(ws.BaseMenu, "")
+func (ws knowledgebase) menuHTML(currPath string) template.HTML {
+	baseMenu, _ := ws.printMenu(ws.config.BaseMenu, "")
 	mainMenu, _ := ws.printMenu(ws.menu, currPath)
 
 	return template.HTML(baseMenu + mainMenu)

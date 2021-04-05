@@ -54,16 +54,16 @@ func main() {
 			return fmt.Errorf("could not get deps: %w", err)
 		}
 
-		handler, err := (&knowledgebase.KB{
+		kb, err := knowledgebase.New(ctx, knowledgebase.Config{
 			Store:     deps.Store,
 			PagesDir:  config.PAGES_DIR,
 			AssetsDir: config.ASSETS_DIR,
 			Searcher:  deps.Searcher,
-		}).Handler(ctx)
+		})
 		if err != nil {
 			panic(err)
 		}
-		server := docsServer(deps, handler)
+		server := docsServer(deps, kb.Handler())
 
 		err = orchestra.PlayUntilSignal(server, os.Interrupt, syscall.SIGTERM)
 		if err != nil {

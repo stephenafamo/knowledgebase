@@ -1,7 +1,6 @@
 package knowledgebase
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -15,64 +14,33 @@ import (
 	"github.com/spf13/afero"
 )
 
-func (kb *KB) Handler(ctx context.Context) (http.Handler, error) {
-	var err error
-
-	if kb.MountPath == "" {
-		kb.MountPath = DefaultMountPath
-	}
-
-	if kb.PagesDir == "" {
-		kb.PagesDir = DefaultDocsDir
-	}
-
-	if kb.AssetsDir == "" {
-		kb.AssetsDir = DefaultAssetsDir
-	}
-
-	if kb.Searcher != nil {
-		err = kb.Searcher.IndexDocs(ctx, kb.Store, kb.PagesDir)
-		if err != nil {
-			return nil, fmt.Errorf("could not index docs: %w", err)
-		}
-	}
-
-	err = kb.setTemplates()
-	if err != nil {
-		return nil, fmt.Errorf("could not set templates: %w", err)
-	}
-
-	err = kb.buildMenu()
-	if err != nil {
-		return nil, fmt.Errorf("could not build menu: %w", err)
-	}
-
-	httpFs := afero.NewHttpFs(kb.Store)
-	fileserver := http.FileServer(httpFs.Dir(kb.AssetsDir))
+func (kb *knowledgebase) Handler() http.Handler {
+	httpFs := afero.NewHttpFs(kb.config.Store)
+	fileserver := http.FileServer(httpFs.Dir(kb.config.AssetsDir))
 
 	r := chi.NewRouter()
 	r.Mount(
-		fmt.Sprintf("/%s/", kb.AssetsDir),
-		http.StripPrefix(fmt.Sprintf("/%s", kb.AssetsDir), fileserver),
+		fmt.Sprintf("/%s/", kb.config.AssetsDir),
+		http.StripPrefix(fmt.Sprintf("/%s", kb.config.AssetsDir), fileserver),
 	)
 
 	r.Mount("/", http.HandlerFunc(kb.serveDocs))
 
 	var handler http.Handler = middleware.StripSlashes(r)
 
-	return handler, nil
+	return handler
 }
 
-func (kb KB) serveDocs(w http.ResponseWriter, r *http.Request) {
+func (kb knowledgebase) serveDocs(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	if path == "" || path == "/" {
 		path = "index.md"
 	}
 
-	fullPath := filepath.Join(kb.PagesDir, path)
+	fullPath := filepath.Join(kb.config.PagesDir, path)
 
-	file, err := kb.Store.Open(fullPath)
+	file, err := kb.config.Store.Open(fullPath)
 	if err != nil && !errors.Is(err, afero.ErrFileNotFound) {
 		err = fmt.Errorf("could not open file %q: %w", path, err)
 		panic(err)
@@ -100,8 +68,8 @@ func (kb KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"heading":  heading,
 		"menuHTML": kb.menuHTML(r.URL.Path),
-		"kb":       kb,
-		"content":  string(markdown),
+		"config":   kb.config,
+		"content":  string(markdown) + "\n\n" + kb.config.SharedMarkdown,
 	}
 
 	err = kb.templates.Execute(w, data)

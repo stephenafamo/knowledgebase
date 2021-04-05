@@ -10,14 +10,14 @@ import (
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store: afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 	}
-	handler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServe(":8080", kb.Handler())
 }

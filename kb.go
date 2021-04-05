@@ -1,17 +1,21 @@
 package knowledgebase
 
 import (
+	"context"
+	"fmt"
 	"html/template"
 
 	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase/search"
 )
 
-var DefaultMountPath = "/"
-var DefaultDocsDir = "pages"
-var DefaultAssetsDir = "assets"
+type knowledgebase struct {
+	config    Config
+	templates *template.Template
+	menu      []*MenuItem
+}
 
-type KB struct {
+type Config struct {
 	Store afero.Fs // Store containing the docs and assets
 
 	// mount path for links in the menu. Default "/"
@@ -62,6 +66,50 @@ type KB struct {
 
 	InHead, BeforeBody, AfterBody template.HTML
 
-	templates *template.Template
-	menu      []*MenuItem
+	// This content will be added at the end of every doc page
+	// BEFORE the markdown is converted to HTML
+	// A good use for this is to add markdown link references that are used in
+	// multiple places. see https://spec.commonmark.org/0.29/#link-reference-definition
+	SharedMarkdown string
+}
+
+func New(ctx context.Context, config Config) (*knowledgebase, error) {
+	var err error
+
+	var DefaultMountPath = "/"
+	var DefaultDocsDir = "pages"
+	var DefaultAssetsDir = "assets"
+
+	kb := &knowledgebase{config: config}
+
+	if kb.config.MountPath == "" {
+		kb.config.MountPath = DefaultMountPath
+	}
+
+	if kb.config.PagesDir == "" {
+		kb.config.PagesDir = DefaultDocsDir
+	}
+
+	if kb.config.AssetsDir == "" {
+		kb.config.AssetsDir = DefaultAssetsDir
+	}
+
+	if kb.config.Searcher != nil {
+		err = kb.config.Searcher.IndexDocs(ctx, kb.config.Store, kb.config.PagesDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not index docs: %w", err)
+		}
+	}
+
+	err = kb.setTemplates()
+	if err != nil {
+		return nil, fmt.Errorf("could not set templates: %w", err)
+	}
+
+	err = kb.buildMenu()
+	if err != nil {
+		return nil, fmt.Errorf("could not build menu: %w", err)
+	}
+
+	return kb, nil
 }

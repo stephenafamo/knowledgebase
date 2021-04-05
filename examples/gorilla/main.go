@@ -11,18 +11,18 @@ import (
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 		MountPath: "/docs",
 	}
-	docsHandler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
 	r := mux.NewRouter()
-	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", docsHandler))
+	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", kb.Handler()))
 
 	http.ListenAndServe(":8080", r)
 }

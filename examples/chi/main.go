@@ -4,25 +4,25 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
-
-	kb := &knowledgebase.KB{
+	config := knowledgebase.Config{
 		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
 		MountPath: "/docs",
 	}
-	docsHandler, err := kb.Handler(ctx)
+
+	kb, err := knowledgebase.New(ctx, config)
 	if err != nil {
 		panic(err)
 	}
 
 	r := chi.NewRouter()
-	r.Mount("/docs", http.StripPrefix("/docs", docsHandler))
+	r.Mount("/docs", http.StripPrefix("/docs", kb.Handler()))
 
 	http.ListenAndServe(":8080", r)
 }

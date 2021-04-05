@@ -75,9 +75,14 @@
               </button>
             </div>
             <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <a href="{{ or .kb.RootURL .kb.MountPath }}" class="flex items-center flex-shrink-0 px-4">
-                <span class="text-xl font-bold">{{or .kb.RootLabel "Home"}}</span>
+              <a href="{{ or .config.RootURL .config.MountPath }}" class="flex items-center flex-shrink-0 px-4">
+                <span class="text-xl font-bold">{{or .config.RootLabel "Home"}}</span>
               </a>
+              {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
+                <a href="{{ .config.MountPath }}" class="px-4">
+                  <span class="text-sm font-bold">{{ .config.MountLabel}}</span>
+                </a>
+              {{end}}
               <nav class="px-2 mt-5 space-y-1">
                 {{ .menuHTML }}
               </nav>
@@ -95,12 +100,12 @@
           <!-- Sidebar component, swap this element with another sidebar if you like -->
           <div class="flex flex-col flex-1 h-0 bg-white border-r border-gray-200">
             <div class="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-              <a href="{{ or .kb.RootURL .kb.MountPath }}" class="px-4">
-                <span class="text-xl font-bold">{{or .kb.RootLabel "Home"}}</span>
+              <a href="{{ or .config.RootURL .config.MountPath }}" class="px-4">
+                <span class="text-xl font-bold">{{or .config.RootLabel "Home"}}</span>
               </a>
-              {{if and .kb.MountLabel (ne .kb.RootURL .kb.MountPath)}}
-                <a href="{{ .kb.MountPath }}" class="px-4">
-                  <span class="text-sm font-bold">{{ .kb.MountLabel}}</span>
+              {{if and .config.MountLabel (ne .config.RootURL .config.MountPath)}}
+                <a href="{{ .config.MountPath }}" class="px-4">
+                  <span class="text-sm font-bold">{{ .config.MountLabel}}</span>
                 </a>
               {{end}}
               <nav class="flex-1 px-2 mt-5 bg-white space-y-1">
