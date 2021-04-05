@@ -66,10 +66,11 @@ func (kb knowledgebase) serveDocs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"heading":  heading,
-		"menuHTML": kb.menuHTML(r.URL.Path),
-		"config":   kb.config,
-		"content":  string(markdown) + "\n\n" + kb.config.SharedMarkdown,
+		"heading":      heading,
+		"menuHTML":     kb.menuHTML(r.URL.Path),
+		"config":       kb.config,
+		"primaryColor": kb.config.PrimaryColor,
+		"content":      string(markdown) + "\n\n" + kb.config.SharedMarkdown,
 	}
 
 	err = kb.templates.Execute(w, data)

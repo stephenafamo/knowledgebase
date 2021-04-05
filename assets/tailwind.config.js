@@ -7,6 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: {
+          600: "var(--color-primary)"
+        }
+      },
       fontFamily: {
         heading: [
           ...defaultTheme.fontFamily.serif,

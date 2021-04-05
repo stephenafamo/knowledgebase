@@ -108,6 +108,9 @@ type Config struct {
 
 	Searcher search.Searcher
 
+	// Used to style some elements in the documentation, such as links
+	PrimaryColor string
+
 	InHead, BeforeBody, AfterBody template.HTML
 
 	// This content will be added at the end of every doc page
