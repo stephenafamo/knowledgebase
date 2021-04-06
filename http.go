@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-func (kb *knowledgebase) Handler() http.Handler {
+func (kb KB) Handler() http.Handler {
 	httpFs := afero.NewHttpFs(kb.config.Store)
 	fileserver := http.FileServer(httpFs.Dir(kb.config.AssetsDir))
 
@@ -31,7 +31,7 @@ func (kb *knowledgebase) Handler() http.Handler {
 	return handler
 }
 
-func (kb knowledgebase) serveDocs(w http.ResponseWriter, r *http.Request) {
+func (kb KB) serveDocs(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
 	if path == "" || path == "/" {

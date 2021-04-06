@@ -22,7 +22,7 @@ var js string
 //go:embed assets/build/css/app.css
 var css string
 
-func (ws *knowledgebase) setTemplates() error {
+func (kb KB) setTemplates() error {
 	var err error
 
 	functions := map[string]interface{}{}
@@ -34,13 +34,13 @@ func (ws *knowledgebase) setTemplates() error {
 		return template.JS(js)
 	}
 	functions["MarkdownToHTML"] = markdownToHTML
-	functions["InHead"] = func() template.HTML { return ws.config.InHead }
-	functions["BeforeBody"] = func() template.HTML { return ws.config.BeforeBody }
-	functions["AfterBody"] = func() template.HTML { return ws.config.AfterBody }
+	functions["InHead"] = func() template.HTML { return kb.config.InHead }
+	functions["BeforeBody"] = func() template.HTML { return kb.config.BeforeBody }
+	functions["AfterBody"] = func() template.HTML { return kb.config.AfterBody }
 
 	t := template.New("Views").Funcs(functions)
 
-	ws.templates, err = t.Parse(string(mainTemplate))
+	kb.templates, err = t.Parse(string(mainTemplate))
 	if err != nil {
 		return fmt.Errorf("could not parse template: %w", err)
 	}
@@ -74,7 +74,7 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 	return buf.String(), nil
 }
 
-func (ws knowledgebase) menuHTML(currPath string) template.HTML {
+func (ws KB) menuHTML(currPath string) template.HTML {
 	baseMenu, _ := ws.printMenu(ws.config.BaseMenu, "")
 	mainMenu, _ := ws.printMenu(ws.menu, currPath)
 

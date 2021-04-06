@@ -9,7 +9,7 @@ import (
 	"github.com/stephenafamo/knowledgebase/search"
 )
 
-type knowledgebase struct {
+type KB struct {
 	config    Config
 	templates *template.Template
 	menu      []*MenuItem
@@ -81,14 +81,14 @@ type Config struct {
 	SharedMarkdown string
 }
 
-func New(ctx context.Context, config Config) (*knowledgebase, error) {
+func New(ctx context.Context, config Config) (KB, error) {
 	var err error
 
 	var DefaultMountPath = "/"
 	var DefaultDocsDir = "pages"
 	var DefaultAssetsDir = "assets"
 
-	kb := &knowledgebase{config: config}
+	kb := KB{config: config}
 
 	if kb.config.MountPath == "" {
 		kb.config.MountPath = DefaultMountPath
@@ -105,18 +105,18 @@ func New(ctx context.Context, config Config) (*knowledgebase, error) {
 	if kb.config.Searcher != nil {
 		err = kb.config.Searcher.IndexDocs(ctx, kb.config.Store, kb.config.PagesDir)
 		if err != nil {
-			return nil, fmt.Errorf("could not index docs: %w", err)
+			return kb, fmt.Errorf("could not index docs: %w", err)
 		}
 	}
 
 	err = kb.setTemplates()
 	if err != nil {
-		return nil, fmt.Errorf("could not set templates: %w", err)
+		return kb, fmt.Errorf("could not set templates: %w", err)
 	}
 
 	err = kb.buildMenu()
 	if err != nil {
-		return nil, fmt.Errorf("could not build menu: %w", err)
+		return kb, fmt.Errorf("could not build menu: %w", err)
 	}
 
 	return kb, nil
