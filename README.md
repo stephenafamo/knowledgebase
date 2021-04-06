@@ -112,8 +112,9 @@ type Config struct {
 	PrimaryColor string
 
 	// An optional logo that will be displayed on the sidebar
-	// A link to the image is needed. Should be square
-	Logo string
+	// A link to the image is needed. Should be square. Will be used as the src
+	// A data URI can be used
+	Logo template.URL
 
 	InHead, BeforeBody, AfterBody template.HTML
 
