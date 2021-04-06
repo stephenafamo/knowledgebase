@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stephenafamo/janus"
 	"github.com/stephenafamo/knowledgebase"
@@ -63,7 +63,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		server := docsServer(deps, kb.Handler())
+		server := docsServer(deps, kb)
 
 		err = orchestra.PlayUntilSignal(server, os.Interrupt, syscall.SIGTERM)
 		if err != nil {
@@ -81,7 +81,7 @@ func main() {
 
 type Deps struct {
 	Port     int
-	Store    afero.Fs
+	Store    fs.FS
 	Searcher search.Searcher
 }
 
@@ -100,9 +100,8 @@ func getDeps(config Config, db *sql.DB) (Deps, error) {
 	return deps, nil
 }
 
-func getStore(config Config) (afero.Fs, error) {
-	store := afero.NewBasePathFs(afero.NewOsFs(), config.ROOT_DIR)
-
+func getStore(config Config) (fs.FS, error) {
+	store := os.DirFS(config.ROOT_DIR)
 	return store, nil
 }
 

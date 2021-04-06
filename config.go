@@ -2,13 +2,13 @@ package knowledgebase
 
 import (
 	"html/template"
+	"io/fs"
 
-	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase/search"
 )
 
 type Config struct {
-	Store afero.Fs // Store containing the docs and assets
+	Store fs.FS // Store containing the docs and assets
 
 	// mount path for links in the menu. Default "/"
 	// Useful if the handler is to be mounted in a subdirectory of the server

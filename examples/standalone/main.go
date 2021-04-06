@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
-	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store: afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
+		Store: os.DirFS("./docs"),
 	}
 
 	kb, err := knowledgebase.New(ctx, config)
@@ -19,5 +19,5 @@ func main() {
 		panic(err)
 	}
 
-	http.ListenAndServe(":8080", kb.Handler())
+	http.ListenAndServe(":8080", kb)
 }

@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
-
-	"github.com/spf13/afero"
 )
 
 func serveDocs(config Config, menu []*MenuItem, exec *template.Template) http.HandlerFunc {
@@ -24,11 +23,11 @@ func serveDocs(config Config, menu []*MenuItem, exec *template.Template) http.Ha
 		fullPath := filepath.Join(config.PagesDir, path)
 
 		file, err := config.Store.Open(fullPath)
-		if err != nil && !errors.Is(err, afero.ErrFileNotFound) {
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			err = fmt.Errorf("could not open file %q: %w", path, err)
 			panic(err)
 		}
-		if errors.Is(err, afero.ErrFileNotFound) {
+		if errors.Is(err, fs.ErrNotExist) {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			log.Printf("404 for file %q", fullPath)
 			return

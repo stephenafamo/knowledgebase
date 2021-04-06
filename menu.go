@@ -3,12 +3,10 @@ package knowledgebase
 import (
 	"fmt"
 	"html/template"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/spf13/afero"
 )
 
 type MenuItem struct {
@@ -23,8 +21,8 @@ func buildMenu(config Config) ([]*MenuItem, error) {
 	}
 
 	// Walking through embed directory
-	err := afero.Walk(config.Store, config.PagesDir,
-		func(path string, info os.FileInfo, err error) error {
+	err := fs.WalkDir(config.Store, config.PagesDir,
+		func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}

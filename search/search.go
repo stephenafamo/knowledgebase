@@ -2,8 +2,7 @@ package search
 
 import (
 	"context"
-
-	"github.com/spf13/afero"
+	"io/fs"
 )
 
 const DefaultLimit = 24
@@ -22,5 +21,5 @@ type Searcher interface {
 	// IndexDocs indexes the entire docs directory
 	// The argument of the function is the directory to index
 	// This should clear all previous indexe
-	IndexDocs(ctx context.Context, store afero.Fs, dir string) error
+	IndexDocs(ctx context.Context, store fs.FS, dir string) error
 }

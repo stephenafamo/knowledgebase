@@ -2,12 +2,14 @@ package knowledgebase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/spf13/afero"
 )
 
 // The knowledgebase handler.
@@ -54,14 +56,10 @@ func New(ctx context.Context, config Config) (KB, error) {
 		return KB{}, fmt.Errorf("could not build menu: %w", err)
 	}
 
-	httpFs := afero.NewHttpFs(config.Store)
-	fileserver := http.FileServer(httpFs.Dir(config.AssetsDir))
+	fileserver := http.FileServer(http.FS(config.Store))
 
 	router := chi.NewRouter()
-	router.Mount(
-		fmt.Sprintf("/%s/", config.AssetsDir),
-		http.StripPrefix(fmt.Sprintf("/%s", config.AssetsDir), fileserver),
-	)
+	router.Mount(fmt.Sprintf("/%s/", config.AssetsDir), fileserver)
 	router.Mount("/", http.HandlerFunc(serveDocs(config, menu, templates)))
 
 	kb := KB{
@@ -74,15 +72,30 @@ func New(ctx context.Context, config Config) (KB, error) {
 
 // Confirm if a specific page was loaded
 func (kb KB) HasPage(name string) (bool, error) {
-	return afero.Exists(afero.NewBasePathFs(kb.config.Store, kb.config.PagesDir), name)
+	return fileExists(kb.config.Store, filepath.Join(kb.config.PagesDir, name))
 }
 
 // Confirm if a specific asset was loaded
 func (kb KB) HasAsset(name string) (bool, error) {
-	return afero.Exists(afero.NewBasePathFs(kb.config.Store, kb.config.AssetsDir), name)
+	return fileExists(kb.config.Store, filepath.Join(kb.config.AssetsDir, name))
 }
 
 // Get the http.Handler which will serve the documentation site
 func (kb KB) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	kb.router.ServeHTTP(w, r)
+}
+
+// Check if a file or directory fileExists.
+func fileExists(dir fs.FS, path string) (bool, error) {
+	file, err := dir.Open(path)
+	if err == nil {
+		return true, nil
+	}
+	defer file.Close()
+
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+
+	return false, err
 }
