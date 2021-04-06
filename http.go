@@ -60,6 +60,9 @@ func (kb knowledgebase) serveDocs(w http.ResponseWriter, r *http.Request) {
 
 	filename := filepath.Base(path)
 	heading := strings.TrimSuffix(filename, ".md")
+	if path == "index.md" {
+		heading = ""
+	}
 
 	if len(strings.Split(heading, " ")) > 1 {
 		heading = strings.SplitN(heading, " ", 2)[1]
