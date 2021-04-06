@@ -22,9 +22,7 @@ var js string
 //go:embed assets/build/css/app.css
 var css string
 
-func (kb KB) setTemplates() error {
-	var err error
-
+func getTemplates(config Config) (*template.Template, error) {
 	functions := map[string]interface{}{}
 
 	functions["GetStyles"] = func() template.CSS {
@@ -34,18 +32,13 @@ func (kb KB) setTemplates() error {
 		return template.JS(js)
 	}
 	functions["MarkdownToHTML"] = markdownToHTML
-	functions["InHead"] = func() template.HTML { return kb.config.InHead }
-	functions["BeforeBody"] = func() template.HTML { return kb.config.BeforeBody }
-	functions["AfterBody"] = func() template.HTML { return kb.config.AfterBody }
+	functions["InHead"] = func() template.HTML { return config.InHead }
+	functions["BeforeBody"] = func() template.HTML { return config.BeforeBody }
+	functions["AfterBody"] = func() template.HTML { return config.AfterBody }
 
 	t := template.New("Views").Funcs(functions)
 
-	kb.templates, err = t.Parse(string(mainTemplate))
-	if err != nil {
-		return fmt.Errorf("could not parse template: %w", err)
-	}
-
-	return nil
+	return t.Parse(string(mainTemplate))
 }
 
 func markdownToHTML(src string) (template.HTML, error) {
@@ -72,11 +65,4 @@ func getGoldMark(src string, imageURL func(string) string) (string, error) {
 		return "", fmt.Errorf("could not convert MD to html: %w", err)
 	}
 	return buf.String(), nil
-}
-
-func (ws KB) menuHTML(currPath string) template.HTML {
-	baseMenu, _ := ws.printMenu(ws.config.BaseMenu, "")
-	mainMenu, _ := ws.printMenu(ws.menu, currPath)
-
-	return template.HTML(baseMenu + mainMenu)
 }
