@@ -87,11 +87,10 @@ func (kb KB) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Check if a file or directory fileExists.
 func fileExists(dir fs.FS, path string) (bool, error) {
-	file, err := dir.Open(path)
+	_, err := dir.Open(path)
 	if err == nil {
 		return true, nil
 	}
-	defer file.Close()
 
 	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
