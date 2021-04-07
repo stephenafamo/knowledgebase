@@ -40,14 +40,19 @@ func serveDocs(config Config, menu []*MenuItem, exec *template.Template) http.Ha
 			panic(err)
 		}
 
-		filename := filepath.Base(path)
-		heading := strings.TrimSuffix(filename, ".md")
-		if path == "index.md" {
-			heading = ""
-		}
+		heading := ""
+		if path != "index.md" {
+			for k, v := range strings.Split(strings.Trim(path, "/"), "/") {
+				if k > 0 {
+					heading += " > "
+				}
+				title := strings.TrimSuffix(v, ".md")
+				if len(strings.Split(title, " ")) > 1 {
+					title = strings.SplitN(title, " ", 2)[1]
+				}
 
-		if len(strings.Split(heading, " ")) > 1 {
-			heading = strings.SplitN(heading, " ", 2)[1]
+				heading += title
+			}
 		}
 
 		data := map[string]interface{}{
