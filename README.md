@@ -60,7 +60,7 @@ You can use this as a library, it will return a [`http.Handler`](https://golang.
 
 ```go
 type Config struct {
-	Store afero.Fs // Store containing the docs and assets
+	Store fs.FS // Store containing the docs and assets
 
 	// mount path for links in the menu. Default "/"
 	// Useful if the handler is to be mounted in a subdirectory of the server
@@ -158,15 +158,15 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
-	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store: afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
+		Store: os.DirFS("./docs"),
 	}
 
 	kb, err := knowledgebase.New(ctx, config)
@@ -174,7 +174,7 @@ func main() {
 		panic(err)
 	}
 
-	http.ListenAndServe(":8080", kb.Handler())
+	http.ListenAndServe(":8080", kb)
 }
 ```
 
@@ -186,16 +186,16 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
+		Store:     os.DirFS("./docs"),
 		MountPath: "/docs",
 	}
 
@@ -205,7 +205,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", kb.Handler()))
+	r.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", kb))
 
 	http.ListenAndServe(":8080", r)
 }
@@ -219,16 +219,16 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/spf13/afero"
 	"github.com/stephenafamo/knowledgebase"
 )
 
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store:     afero.NewBasePathFs(afero.NewOsFs(), "./docs"),
+		Store:     os.DirFS("./docs"),
 		MountPath: "/docs",
 	}
 
@@ -238,7 +238,7 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Mount("/docs", http.StripPrefix("/docs", kb.Handler()))
+	r.Mount("/docs", http.StripPrefix("/docs", kb))
 
 	http.ListenAndServe(":8080", r)
 }
