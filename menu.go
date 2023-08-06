@@ -21,7 +21,7 @@ func buildMenu(config Config) ([]*MenuItem, error) {
 	}
 
 	// Walking through embed directory
-	err := fs.WalkDir(config.Store, config.PagesDir,
+	err := fs.WalkDir(config.Docs, ".",
 		func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -38,7 +38,6 @@ func buildMenu(config Config) ([]*MenuItem, error) {
 			}
 
 			path = filepath.Clean(filepath.ToSlash(path))
-			path = strings.TrimPrefix(path, config.PagesDir)
 			path = strings.TrimPrefix(path, "/")
 
 			// do not add these to the menu

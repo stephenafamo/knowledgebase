@@ -8,28 +8,25 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
 )
 
 func serveDocs(config Config, menu []*MenuItem, exec *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
+		path := strings.TrimPrefix(r.URL.Path, "/")
 
-		if path == "" || path == "/" {
+		if path == "" {
 			path = "index.md"
 		}
 
-		fullPath := filepath.Join(config.PagesDir, path)
-
-		file, err := config.Store.Open(fullPath)
+		file, err := config.Docs.Open(path)
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			err = fmt.Errorf("could not open file %q: %w", path, err)
 			panic(err)
 		}
 		if errors.Is(err, fs.ErrNotExist) {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			log.Printf("404 for file %q", fullPath)
+			log.Printf("404 for file %q", path)
 			return
 		}
 		defer file.Close()

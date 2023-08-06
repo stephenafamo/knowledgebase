@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -23,24 +22,14 @@ type KB struct {
 func New(ctx context.Context, config Config) (KB, error) {
 	var err error
 
-	var DefaultMountPath = "/"
-	var DefaultDocsDir = "pages"
-	var DefaultAssetsDir = "assets"
+	DefaultMountPath := "/"
 
 	if config.MountPath == "" {
 		config.MountPath = DefaultMountPath
 	}
 
-	if config.PagesDir == "" {
-		config.PagesDir = DefaultDocsDir
-	}
-
-	if config.AssetsDir == "" {
-		config.AssetsDir = DefaultAssetsDir
-	}
-
 	if config.Searcher != nil {
-		err = config.Searcher.IndexDocs(ctx, config.Store, config.PagesDir)
+		err = config.Searcher.IndexDocs(ctx, config.Docs)
 		if err != nil {
 			return KB{}, fmt.Errorf("could not index docs: %w", err)
 		}
@@ -56,10 +45,10 @@ func New(ctx context.Context, config Config) (KB, error) {
 		return KB{}, fmt.Errorf("could not build menu: %w", err)
 	}
 
-	fileserver := http.FileServer(http.FS(config.Store))
+	fileserver := http.FileServer(http.FS(config.Assets))
 
 	router := chi.NewRouter()
-	router.Mount(fmt.Sprintf("/%s/", config.AssetsDir), fileserver)
+	router.Mount("/assets", http.StripPrefix("/assets", fileserver))
 	router.Mount("/", http.HandlerFunc(serveDocs(config, menu, templates)))
 
 	kb := KB{
@@ -72,12 +61,12 @@ func New(ctx context.Context, config Config) (KB, error) {
 
 // Confirm if a specific page was loaded
 func (kb KB) HasPage(name string) (bool, error) {
-	return fileExists(kb.config.Store, filepath.Join(kb.config.PagesDir, name))
+	return fileExists(kb.config.Docs, name)
 }
 
 // Confirm if a specific asset was loaded
 func (kb KB) HasAsset(name string) (bool, error) {
-	return fileExists(kb.config.Store, filepath.Join(kb.config.AssetsDir, name))
+	return fileExists(kb.config.Assets, name)
 }
 
 // Get the http.Handler which will serve the documentation site

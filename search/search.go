@@ -21,5 +21,5 @@ type Searcher interface {
 	// IndexDocs indexes the entire docs directory
 	// The argument of the function is the directory to index
 	// This should clear all previous indexe
-	IndexDocs(ctx context.Context, store fs.FS, dir string) error
+	IndexDocs(ctx context.Context, store fs.FS) error
 }

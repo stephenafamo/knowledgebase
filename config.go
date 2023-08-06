@@ -8,7 +8,8 @@ import (
 )
 
 type Config struct {
-	Store fs.FS // Store containing the docs and assets
+	Docs   fs.FS // Store containing the docs
+	Assets fs.FS // Store containing the assets
 
 	// mount path for links in the menu. Default "/"
 	// Useful if the handler is to be mounted in a subdirectory of the server
@@ -26,14 +27,6 @@ type Config struct {
 	// RootURL is not set or the RootURL is the same as the MountPath.
 	// In these scenarios, the RootURL is the MountPath and the RootLabel will suffice
 	MountLabel string
-
-	// Directory in the store where the markdown files are
-	// Default "pages"
-	PagesDir string
-
-	// Directory in the store where the referenced assets in the docs are
-	// Default "assets"
-	AssetsDir string
 
 	// BaseMenu is a list of menu items that will be displayed before the
 	// menu generated from the pages.

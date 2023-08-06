@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
@@ -21,14 +21,15 @@ import (
 
 type Config struct {
 	PORT       int
-	ROOT_DIR   string
 	PAGES_DIR  string
 	ASSETS_DIR string
 }
 
 func main() {
-	var ctx = context.Background()
-	var config = Config{}
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	config := Config{}
 
 	CMD := &cobra.Command{
 		Use:   "knowledgebase",
@@ -37,28 +38,21 @@ func main() {
 		Args:  cobra.NoArgs,
 	}
 
-	CMD.PersistentFlags().IntVarP(&config.PORT, "port", "p", 80,
-		"Port to start the server on")
-	CMD.PersistentFlags().StringVarP(&config.ROOT_DIR, "dir", "d", ".",
-		"Docs directory")
-	CMD.PersistentFlags().StringVar(&config.PAGES_DIR, "pages-dir", "pages",
-		"Folder in the docs directory where the markdown pages are")
-	CMD.PersistentFlags().StringVar(&config.ASSETS_DIR, "assets-dir", "assets",
-		"Folder in the docs directory where the static assets are")
+	CMD.PersistentFlags().IntVarP(&config.PORT, "port", "p", 80, "Port to start the server on")
+	CMD.PersistentFlags().StringVarP(&config.PAGES_DIR, "docs", "d", "docs", "Path to the markdown pages")
+	CMD.PersistentFlags().StringVarP(&config.ASSETS_DIR, "assets", "a", "assets", "Path to the assets directory")
 
 	CMD.RunE = func(cmd *cobra.Command, args []string) error {
-
-		// Get the CMD dependencies
-		deps, err := getDeps(config, nil)
-		if err != nil {
-			return fmt.Errorf("could not get deps: %w", err)
+		deps := Deps{
+			Port:   config.PORT,
+			Pages:  os.DirFS(config.PAGES_DIR),
+			Assets: os.DirFS(config.ASSETS_DIR),
 		}
 
 		kb, err := knowledgebase.New(ctx, knowledgebase.Config{
-			Store:     deps.Store,
-			PagesDir:  config.PAGES_DIR,
-			AssetsDir: config.ASSETS_DIR,
-			Searcher:  deps.Searcher,
+			Docs:     deps.Pages,
+			Assets:   deps.Assets,
+			Searcher: deps.Searcher,
 		})
 		if err != nil {
 			panic(err)
@@ -81,28 +75,9 @@ func main() {
 
 type Deps struct {
 	Port     int
-	Store    fs.FS
+	Pages    fs.FS
+	Assets   fs.FS
 	Searcher search.Searcher
-}
-
-func getDeps(config Config, db *sql.DB) (Deps, error) {
-	var err error
-
-	var deps = Deps{
-		Port: config.PORT,
-	}
-
-	deps.Store, err = getStore(config)
-	if err != nil {
-		return deps, fmt.Errorf("could not get store: %w", err)
-	}
-
-	return deps, nil
-}
-
-func getStore(config Config) (fs.FS, error) {
-	store := os.DirFS(config.ROOT_DIR)
-	return store, nil
 }
 
 func docsServer(deps Deps, handler http.Handler) orchestra.Player {
