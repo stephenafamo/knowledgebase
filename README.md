@@ -47,11 +47,10 @@ Usage:
   knowledgebase [flags]
 
 Flags:
-      --assets-dir string   Folder in the docs directory where the static assets are (default "assets")
-  -d, --dir string          Docs directory (default ".")
-  -h, --help                help for knowledgebase
-      --pages-dir string    Folder in the docs directory where the markdown pages are (default "pages")
-  -p, --port int            Port to start the server on (default 80)
+  -a, --assets string   Path to the assets directory (default "assets")
+  -d, --docs string     Path to the markdown pages (default "docs")
+  -h, --help            help for knowledgebase
+  -p, --port int        Port to start the server on (default 80)
 ```
 
 ### Use as a Library
@@ -60,7 +59,8 @@ You can use this as a library, it will return a [`http.Handler`](https://golang.
 
 ```go
 type Config struct {
-	Store fs.FS // Store containing the docs and assets
+	Docs   fs.FS // Store containing the docs
+	Assets fs.FS // Store containing the assets
 
 	// mount path for links in the menu. Default "/"
 	// Useful if the handler is to be mounted in a subdirectory of the server
@@ -78,14 +78,6 @@ type Config struct {
 	// RootURL is not set or the RootURL is the same as the MountPath.
 	// In these scenarios, the RootURL is the MountPath and the RootLabel will suffice
 	MountLabel string
-
-	// Directory in the store where the markdown files are
-	// Default "pages"
-	PagesDir string
-
-	// Directory in the store where the referenced assets in the docs are
-	// Default "assets"
-	AssetsDir string
 
 	// BaseMenu is a list of menu items that will be displayed before the
 	// menu generated from the pages.
@@ -166,7 +158,7 @@ import (
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store: os.DirFS("./docs"),
+		Docs: os.DirFS("./docs"),
 	}
 
 	kb, err := knowledgebase.New(ctx, config)
@@ -195,7 +187,7 @@ import (
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store:     os.DirFS("./docs"),
+        Docs:     os.DirFS("./docs"),
 		MountPath: "/docs",
 	}
 
@@ -228,7 +220,7 @@ import (
 func main() {
 	ctx := context.Background()
 	config := knowledgebase.Config{
-		Store:     os.DirFS("./docs"),
+		Docs:     os.DirFS("./docs"),
 		MountPath: "/docs",
 	}
 
